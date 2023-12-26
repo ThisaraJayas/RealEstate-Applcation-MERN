@@ -1,7 +1,8 @@
 import User from "../models/user.model.js"
 import bcryptjs from 'bcryptjs'
+import { errorHandler } from "../utils/error.js"
 
-export const signup = async(req,res) =>{
+export const signup = async(req,res, next) =>{
     const {username, email, password} = req.body  //grab input from signup page /api/auth/signup
 
     const hashPassword = bcryptjs.hashSync(password, 10)
@@ -12,7 +13,8 @@ export const signup = async(req,res) =>{
         res.status(200).json('User created success')
         
     }catch(err){
-        res.status(500).json('err.message')
+       next(err) //logic created in index.js
+    //    next(errorHandler(330,'utils error')) another method error.js in utils
     }
     
 }
