@@ -38,3 +38,38 @@ export const signin = async(req,res,next)=>{
         next(error)
     }
 }
+
+//google auth 
+export const google =async(req,res,next)=>{
+    try{
+        const user = await User.findOne({email:req.body.email})
+        if(user){
+            const token = jwt.sign({id:user._id},process.env.JWT_SECRET)
+            const {password: pass, ...rest}=user._doc
+            res.cookie('access_token',token,{httpOnly: true}).status(200).json(rest)
+            //here username is separated we need to connect them(make them unique)
+            //Thisara Jayas = thisara12
+        }else{
+            //generate a random password for google login because google sign in cantot 
+            //add password but user can update random password latter
+            const generateedPassword=Math.random().toString(36).slice(-8)+ Math.random().toString(36).slice(-8)
+                                            //this is 8+6=16 character password very secure
+            //hash password
+            const hashPassword = bcryptjs.hashSync(generateedPassword,10)
+            const newUser = new User({
+                //Thisara Jayas = thisara12
+                username: req.body.name.split(" ").join("").toLowerCase() + Math.random().toString(36).slice(-4), 
+                email:req.body.email, 
+                password: hashPassword,
+                avatar: req.body.photo //comming from OAuth.jsx
+                                    //in user.model.js add Avatar
+            })
+            await newUser.save()
+            const token = jwt.sign({id:newUser._id},process.env.JWT_SECRET)
+            const {password: pass, ...rest}=newUser._doc
+            res.cookie('access_token',token,{httpOnly: true}).status(200).json(rest)
+        }
+    }catch(error){
+        next(error)
+    }
+}
