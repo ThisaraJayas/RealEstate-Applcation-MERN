@@ -24,21 +24,22 @@ export default function Profile() {
   const storageRef = ref(storage, fileName)
   const uploadTask = uploadBytesResumable(storageRef,file)
 
-
-  uploadTask.on('state_changed',
-  (snapshot)=>{
-    const progress = (snapshot.bytesTransferred / snapshot.totalBytes)*100
-    setFilePerc(Math.round(progress))
-  });
-  (error)=>{
-    setFileUploadError(true)
-  };
-  ()=>{
-    getDownloadURL(uploadTask,snapshot.ref).then((downloadURL)=>{
-      setFormData({...formData, avatar: downloadURL})
-    })
-  }
-
+  uploadTask.on(
+    'state_changed',
+    (snapshot) => {
+      const progress =
+        (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+      setFilePerc(Math.round(progress));
+    },
+    (error) => {
+      setFileUploadError(true);
+    },
+    () => {
+      getDownloadURL(uploadTask.snapshot.ref).then((downloadURL) =>
+        setFormData({ ...formData, avatar: downloadURL })
+      );
+    }
+  );
  }
 
   return (
@@ -50,7 +51,20 @@ export default function Profile() {
 
 
         <img onClick={()=>fileRef.current.click()} className='rounded-full 
-        h-24 w-24 object-cover cursor-pointer self-center mt-2' src={currentUser.avatar} alt=''/>
+        h-24 w-24 object-cover cursor-pointer self-center mt-2' src={formData.avatar ||  currentUser.avatar} alt=''/>
+        <p className='text-sm self-center'>
+          {fileUploadError ? (
+            <span className='text-red-700'>
+              Error Image upload (image must be less than 2 mb)
+            </span>
+          ) : filePerc > 0 && filePerc < 100 ? (
+            <span className='text-slate-700'>{`Uploading ${filePerc}%`}</span>
+          ) : filePerc === 100 ? (
+            <span className='text-green-700'>Image successfully uploaded!</span>
+          ) : (
+            ''
+          )}
+        </p>
         <input type='text' placeholder='username' id='username' className='border p-3 rounded-lg'/>
         <input type='text' placeholder='email' id='email' className='border p-3 rounded-lg'/>
         <input type='text' placeholder='password' id='password' className='border p-3 rounded-lg'/>
