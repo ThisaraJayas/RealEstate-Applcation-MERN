@@ -1,1 +1,2 @@
 # RealEstate-Applcation-MERN
+.env
